@@ -36,7 +36,7 @@ fun FastScrollbar(
 
     val isDraggingState = remember { mutableStateOf(false) }
     val currentLetterState = remember { mutableStateOf<Char?>(null) }
-    val currentYState = remember { mutableStateOf(0f) }
+    val currentYState = remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val trackHeight = constraints.maxHeight.toFloat()

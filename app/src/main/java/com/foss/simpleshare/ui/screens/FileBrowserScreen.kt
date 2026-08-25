@@ -157,7 +157,7 @@ fun FileBrowserScreen(
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
 
-    var deletedCount by remember { mutableStateOf(0) }
+    var deletedCount by remember { androidx.compose.runtime.mutableIntStateOf(0) }
 
     // Logic States
     var searchQuery by remember { mutableStateOf("") }
@@ -725,8 +725,8 @@ fun FileBrowserScreen(
 
                 var hasDragged by remember { mutableStateOf(false) }
                 var dragStartPosition by remember { mutableStateOf<Offset?>(null) }
-                var lastDragEndTime by remember { mutableStateOf(0L) } // Debounce for click after drag
-                var pressedItemIndex by remember { mutableStateOf(-1) }
+                var lastDragEndTime by remember { androidx.compose.runtime.mutableLongStateOf(0L) } // Debounce for click after drag
+                var pressedItemIndex by remember { androidx.compose.runtime.mutableIntStateOf(-1) }
                 val viewConfiguration = androidx.compose.ui.platform.LocalViewConfiguration.current
 
                 fun handleFileClickWithDebounce(file: FileModel) {

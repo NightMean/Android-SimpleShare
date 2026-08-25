@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.foss.simpleshare.data.AppDatabase
@@ -155,8 +156,8 @@ class MainActivity : ComponentActivity() {
         if (showInvalidPathDialog) {
             AlertDialog(
                 onDismissRequest = { /* Force user to acknowledge */ },
-                title = { Text("Default Path Not Found") },
-                text = { Text("The default path you set (\"${File(settings.defaultPath).absolutePath}\") no longer exists. The app will reset to the main storage directory.") },
+                title = { Text(stringResource(R.string.invalid_path_title)) },
+                text = { Text(stringResource(R.string.invalid_path_message, File(settings.defaultPath).absolutePath)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -166,7 +167,7 @@ class MainActivity : ComponentActivity() {
                             showInvalidPathDialog = false
                         }
                     ) {
-                        Text("OK")
+                        Text(stringResource(R.string.action_ok))
                     }
                 }
             )
@@ -226,7 +227,7 @@ class MainActivity : ComponentActivity() {
 
                         updateSettings(newSettings)
 
-                        android.widget.Toast.makeText(context, "Settings saved", android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(context, context.getString(R.string.toast_settings_saved), android.widget.Toast.LENGTH_SHORT).show()
                     },
                     onReset = {
                         settingsStore.clear()
@@ -240,7 +241,7 @@ class MainActivity : ComponentActivity() {
                         // Force back to SETUP because targetApp is null
                         currentScreen = Screen.SETUP
 
-                        android.widget.Toast.makeText(context, "Reset to defaults.", android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(context, context.getString(R.string.toast_reset_defaults), android.widget.Toast.LENGTH_SHORT).show()
                     }
                 )
             }

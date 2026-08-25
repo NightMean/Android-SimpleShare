@@ -120,6 +120,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.foss.simpleshare.R
 
 
@@ -220,7 +221,7 @@ fun FileBrowserScreen(
             }
 
             if (removedCount > 0) {
-                Toast.makeText(context, "Selection updated: Removed $removedCount missing files", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_selection_updated, removedCount), Toast.LENGTH_SHORT).show()
             }
             isLoading = false
         }
@@ -242,7 +243,7 @@ fun FileBrowserScreen(
             withContext(Dispatchers.Main) {
                 isDeleting = false
                 deletedCount = count
-                Toast.makeText(context, "Deleted $count files", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_deleted, count), Toast.LENGTH_SHORT).show()
                 selectedFiles.clear()
                 refreshFiles()
             }
@@ -253,16 +254,16 @@ fun FileBrowserScreen(
     if (showDeleteConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
-            title = { Text("Delete Files?") },
-            text = { Text("Are you sure you want to delete ${selectedFiles.size} selected item(s)? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_dialog_title)) },
+            text = { Text(stringResource(R.string.delete_dialog_message, selectedFiles.size)) },
             confirmButton = {
                 TextButton(onClick = { onDeleteConfirmed() }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )
@@ -271,12 +272,12 @@ fun FileBrowserScreen(
     if (isDeleting) {
             AlertDialog(
             onDismissRequest = { }, // Prevent dismiss
-            title = { Text("Deleting...") },
+            title = { Text(stringResource(R.string.deleting_title)) },
             text = { 
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     androidx.compose.material3.CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Please wait")
+                    Text(stringResource(R.string.deleting_message))
                 }
             },
             confirmButton = {}
@@ -398,7 +399,7 @@ fun FileBrowserScreen(
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(context, "Cannot open file: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.error_cannot_open_file, e.message), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -448,7 +449,7 @@ fun FileBrowserScreen(
                         TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search...") },
+                            placeholder = { Text(stringResource(R.string.search_placeholder)) },
                             singleLine = true,
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -460,7 +461,7 @@ fun FileBrowserScreen(
                         )
                     } else {
                         val file = File(currentPath)
-                        val titleText = if (file.absolutePath == File(repository.getDefaultPath()).absolutePath || file.name == "0") "Internal Storage" else file.name
+                        val titleText = if (file.absolutePath == File(repository.getDefaultPath()).absolutePath || file.name == "0") stringResource(R.string.title_internal_storage) else file.name
                         Text(
                             text = titleText,
                             maxLines = 1,
@@ -474,7 +475,7 @@ fun FileBrowserScreen(
                             isSearchActive = false 
                             searchQuery = ""
                         }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Close Search")
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_close_search))
                         }
                     } else if (File(currentPath).absolutePath != File(repository.getDefaultPath()).absolutePath) {
                         TooltipIconButton(onClick = {
@@ -483,33 +484,33 @@ fun FileBrowserScreen(
                                 if (!keepSelection) selectedFiles.clear()
                                 onPathChange(parent)
                             }
-                        }, tooltip = "Go Back") {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }, tooltip = stringResource(R.string.tooltip_go_back)) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                         }
                     }
                 },
                 actions = {
                     if (isSearchActive && searchQuery.isNotEmpty()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear))
                         }
                     } else {
                         // Delete Button (Only when selection active)
                         if (selectedFiles.isNotEmpty()) {
                             TooltipIconButton(
                                 onClick = { showDeleteConfirmDialog = true }, 
-                                tooltip = "Delete"
+                                tooltip = stringResource(R.string.tooltip_delete)
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.delete_24),
-                                    contentDescription = "Delete",
+                                    contentDescription = stringResource(R.string.cd_delete),
                                     tint = Color.Red
                                 )
                             }
                         }
                         
                         TooltipIconButton(onClick = onSettingsClick, tooltip = "Settings") {
-                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.cd_settings))
                         }
                     }
                 }
@@ -523,12 +524,12 @@ fun FileBrowserScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // View Toggle
-                    TooltipIconButton(onClick = { onViewModeChange(!isGridView) }, tooltip = if (isGridView) "List View" else "Grid View", position = TooltipPosition.Above) {
+                    TooltipIconButton(onClick = { onViewModeChange(!isGridView) }, tooltip = stringResource(if (isGridView) R.string.tooltip_list_view else R.string.tooltip_grid_view), position = TooltipPosition.Above) {
                         Icon(if (isGridView) Icons.Default.List else Icons.Default.GridView, contentDescription = "Toggle View")
                     }
 
                     // Refresh
-                    TooltipIconButton(onClick = { refreshFiles() }, tooltip = "Refresh", position = TooltipPosition.Above) {
+                    TooltipIconButton(onClick = { refreshFiles() }, tooltip = stringResource(R.string.tooltip_refresh), position = TooltipPosition.Above) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
 
@@ -554,13 +555,13 @@ fun FileBrowserScreen(
                                   selectedFiles.addAll(filesToAdd)
                              }
                         }
-                    }, tooltip = "Select All", position = TooltipPosition.Above) {
+                    }, tooltip = stringResource(R.string.tooltip_select_all), position = TooltipPosition.Above) {
                         Icon(Icons.Default.SelectAll, contentDescription = "Select All")
                     }
 
                     // Sort
                     Box {
-                        TooltipIconButton(onClick = { showSortMenu = true }, tooltip = "Sort", position = TooltipPosition.Above) {
+                        TooltipIconButton(onClick = { showSortMenu = true }, tooltip = stringResource(R.string.tooltip_sort), position = TooltipPosition.Above) {
                             Icon(Icons.Default.Sort, contentDescription = "Sort")
                         }
                         DropdownMenu(
@@ -568,7 +569,7 @@ fun FileBrowserScreen(
                             onDismissRequest = { showSortMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Folders first") },
+                                text = { Text(stringResource(R.string.sort_folders_first)) },
                                 onClick = {
                                     onSortChange(sortOption, isSortAscending, !sortFoldersFirst)
                                     showSortMenu = false
@@ -612,7 +613,7 @@ fun FileBrowserScreen(
                     }
 
                     // Search
-                    TooltipIconButton(onClick = { isSearchActive = true }, tooltip = "Search", position = TooltipPosition.Above) {
+                    TooltipIconButton(onClick = { isSearchActive = true }, tooltip = stringResource(R.string.tooltip_search), position = TooltipPosition.Above) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                 }
@@ -622,15 +623,15 @@ fun FileBrowserScreen(
             if (selectedFiles.isNotEmpty()) {
                 androidx.compose.material3.ExtendedFloatingActionButton(
                     onClick = { onProceedClick() },
-                    icon = { Icon(Icons.Default.Share, contentDescription = "Share") },
+                    icon = { Icon(Icons.Default.Share, contentDescription = stringResource(R.string.cd_share)) },
                     text = { 
                          Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Share (${selectedFiles.size})")
+                            Text(stringResource(R.string.fab_share_count, selectedFiles.size))
                             if (targetAppIcon != null) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Image(
                                     painter = rememberDrawablePainter(drawable = targetAppIcon),
-                                    contentDescription = "Target App",
+                                    contentDescription = stringResource(R.string.cd_target_app),
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -649,9 +650,9 @@ fun FileBrowserScreen(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
                         text = when {
-                            isSearchActive -> "No results found"
-                            isLoading -> "Loading..."
-                            else -> "No files found"
+                            isSearchActive -> stringResource(R.string.empty_no_results)
+                            isLoading -> stringResource(R.string.empty_loading)
+                            else -> stringResource(R.string.empty_no_files)
                         },
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -930,8 +931,8 @@ fun FileBrowserScreen(
     if (showLowSpaceDialog) {
         AlertDialog(
             onDismissRequest = { showLowSpaceDialog = false },
-            title = { Text("Low Storage Space") },
-            text = { Text("There is not enough space left on the device and upload might fail.\n\nProceed anyway?") },
+            title = { Text(stringResource(R.string.low_space_title)) },
+            text = { Text(stringResource(R.string.low_space_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -939,7 +940,7 @@ fun FileBrowserScreen(
                         FileSharer.shareFiles(context, selectedFiles, targetAppPackageName)
                     }
                 ) {
-                    Text("Yes")
+                    Text(stringResource(R.string.action_yes))
                 }
             },
             dismissButton = {
@@ -953,13 +954,13 @@ fun FileBrowserScreen(
     if (targetAppPackageName == null) {
         AlertDialog(
             onDismissRequest = { }, 
-            title = { Text("Setup Required") },
-            text = { Text("You must select a target app to share files with before using the browser.") },
+            title = { Text(stringResource(R.string.setup_required_title)) },
+            text = { Text(stringResource(R.string.setup_required_message)) },
             confirmButton = {
                 TextButton(
                     onClick = { onSettingsClick() }
                 ) {
-                    Text("Select App")
+                    Text(stringResource(R.string.action_select_app))
                 }
             },
             properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import com.foss.simpleshare.R
 import com.foss.simpleshare.data.FileModel
 
 /**
@@ -88,10 +89,10 @@ object FileSharer {
             try {
                 context.startActivity(shareIntent)
             } catch (e: android.content.ActivityNotFoundException) {
-                Toast.makeText(context, "Selected app not found or nothing available to share.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.error_app_not_found), Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
-            Toast.makeText(context, "Error preparing share: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.error_preparing_share, e.message), Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }

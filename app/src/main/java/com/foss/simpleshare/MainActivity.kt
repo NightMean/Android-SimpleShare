@@ -41,6 +41,7 @@ import androidx.core.app.ActivityCompat
 import com.foss.simpleshare.data.AppDatabase
 import com.foss.simpleshare.data.FileModel
 import com.foss.simpleshare.data.FileRepository
+import com.foss.simpleshare.data.fileModelFromPath
 import com.foss.simpleshare.settings.AppSettings
 import com.foss.simpleshare.settings.SettingsStore
 import com.foss.simpleshare.settings.resolveAllowedExtensions
@@ -99,17 +100,28 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-        var currentPath by remember { mutableStateOf(settings.defaultPath) }
+        // Survives configuration changes (rotation) and process death restoration
+        var currentPath by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(settings.defaultPath) }
 
         val allowedExtensions = remember(settings.filterMode, settings.customExtensions) {
             resolveAllowedExtensions(settings)
         }
 
-        // Hoisted selection state (shared across screens so selection survives navigation)
-        val selectedFiles = remember { androidx.compose.runtime.mutableStateListOf<FileModel>() }
+        // Hoisted selection state (shared across screens so selection survives navigation).
+        // Saved as path strings so the selection also survives configuration changes.
+        val selectedFiles = androidx.compose.runtime.saveable.rememberSaveable(
+            saver = androidx.compose.runtime.saveable.listSaver<
+                androidx.compose.runtime.snapshots.SnapshotStateList<FileModel>, String>(
+                save = { list -> list.map { it.path } },
+                restore = { paths ->
+                    androidx.compose.runtime.mutableStateListOf<FileModel>()
+                        .apply { addAll(paths.mapNotNull(::fileModelFromPath)) }
+                }
+            )
+        ) { androidx.compose.runtime.mutableStateListOf<FileModel>() }
 
         // UI State (Hoisted to persist across navigation)
-        var isGridView by remember { mutableStateOf(false) }
+        var isGridView by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
 
         val context = LocalContext.current
         LaunchedEffect(settings.showThumbnails) {

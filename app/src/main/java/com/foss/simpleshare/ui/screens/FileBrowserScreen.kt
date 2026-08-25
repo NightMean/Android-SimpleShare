@@ -413,6 +413,15 @@ fun FileBrowserScreen(
         }
     }
 
+    // Reset scroll to the top when entering a different folder. The lazy list
+    // states survive folder changes within this composition; without this reset,
+    // a large folder can open scrolled to the previous position (e.g. 10-15th
+    // item) because the old first-visible key no longer exists.
+    LaunchedEffect(currentPath) {
+        listState.scrollToItem(0)
+        gridState.scrollToItem(0)
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

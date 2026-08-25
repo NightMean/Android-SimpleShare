@@ -13,8 +13,8 @@ android {
         applicationId = "com.foss.simpleshare"
         minSdk = 28
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.8.1"
+        versionCode = 7
+        versionName = "0.8.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -29,6 +29,16 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Local distribution builds are signed with the machine's debug
+            // keystore so the APK is installable and upgrades in place. The
+            // guard keeps builds working on machines without that keystore.
+            val debugKeystore = File(
+                System.getProperty("user.home"),
+                ".android/debug.keystore"
+            )
+            if (debugKeystore.exists()) {
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
     compileOptions {

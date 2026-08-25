@@ -101,6 +101,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.foss.simpleshare.data.FileModel
 import com.foss.simpleshare.data.FileRepository
 import com.foss.simpleshare.data.SortOption
+import com.foss.simpleshare.share.FileSharer
 import com.foss.simpleshare.ui.components.FileGridItem
 import com.foss.simpleshare.ui.components.FileListItem
 import com.foss.simpleshare.utils.StorageUtils
@@ -369,10 +370,10 @@ fun FileBrowserScreen(
             if (availableSpace < totalSize) {
                 showLowSpaceDialog = true
             } else {
-                shareFiles(context, selectedFiles, targetAppPackageName)
+                FileSharer.shareFiles(context, selectedFiles, targetAppPackageName)
             }
         } else {
-            shareFiles(context, selectedFiles, targetAppPackageName)
+            FileSharer.shareFiles(context, selectedFiles, targetAppPackageName)
         }
     }
 
@@ -1018,7 +1019,7 @@ fun FileBrowserScreen(
                 TextButton(
                     onClick = {
                         showLowSpaceDialog = false
-                        shareFiles(context, selectedFiles, targetAppPackageName)
+                        FileSharer.shareFiles(context, selectedFiles, targetAppPackageName)
                     }
                 ) {
                     Text("Yes")
@@ -1048,75 +1049,3 @@ fun FileBrowserScreen(
         )
     }
 }
-
-
-
-fun shareFiles(context: android.content.Context, files: List<FileModel>, targetAppPackageName: String?) {
-    if (files.isEmpty()) return
-
-    val uris = ArrayList<Uri>()
-    try {
-        files.forEach { fileModel ->
-            val uri = androidx.core.content.FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.provider", 
-                fileModel.file
-            )
-            uris.add(uri)
-        }
-
-        val intent = Intent().apply {
-            if (uris.size == 1) {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_STREAM, uris[0])
-            } else {
-                action = Intent.ACTION_SEND_MULTIPLE
-                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-            }
-            val mimeType = if (files.any { it.extension in setOf("mp4", "mkv", "webm", "avi") }) "video/*" else "image/*"
-            type = mimeType
-
-            // Older Android versions only honor FLAG_GRANT_READ_URI_PERMISSION for the
-            // first EXTRA_STREAM URI, so the target app sees an empty selection for
-            // ACTION_SEND_MULTIPLE. Attaching every URI via ClipData grants read
-            // access to all of them.
-            if (uris.isNotEmpty()) {
-                val clipData = android.content.ClipData.newRawUri(null, uris[0])
-                for (i in 1 until uris.size) {
-                    clipData.addItem(android.content.ClipData.Item(uris[i]))
-                }
-                this.clipData = clipData
-            }
-
-            if (targetAppPackageName != null) {
-                if (targetAppPackageName.contains("/")) {
-                    val split = targetAppPackageName.split("/")
-                    if (split.size == 2) {
-                        component = android.content.ComponentName(split[0], split[1])
-                    } else {
-                         setPackage(targetAppPackageName)
-                    }
-                } else {
-                     setPackage(targetAppPackageName)
-                }
-            }
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        
-        val shareIntent = if (targetAppPackageName == null) {
-            Intent.createChooser(intent, "Share files")
-        } else {
-            intent
-        }
-        
-        try {
-            context.startActivity(shareIntent)
-        } catch (e: android.content.ActivityNotFoundException) {
-            Toast.makeText(context, "Selected app not found or nothing available to share.", Toast.LENGTH_SHORT).show()
-        }
-    } catch (e: Exception) {
-         Toast.makeText(context, "Error preparing share: ${e.message}", Toast.LENGTH_LONG).show()
-         e.printStackTrace()
-    }
-}
-

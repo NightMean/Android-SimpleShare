@@ -74,7 +74,10 @@ class FileRepository(private val directoryCacheDao: DirectoryCacheDao? = null) {
         if (!folder.exists()) return null
         
         val cached = dao.getByPath(folderPath)
-        // Validate cache by checking lastModified
+        // Validate cache by checking lastModified.
+        // Known tradeoff: content changes that preserve the folder's mtime are not
+        // detected; mtime is updated by the OS whenever direct children change,
+        // which covers the realistic cases for this cache.
         return if (cached != null && cached.lastModified == folder.lastModified()) {
             cached.size
         } else {
@@ -138,7 +141,10 @@ class FileRepository(private val directoryCacheDao: DirectoryCacheDao? = null) {
                     deletedCount++
                     // Invalidate cache if it was a directory
                     if (fileModel.isDirectory) {
+                        // Drop the folder's own entry and every descendant's, so
+                        // recreated subtrees don't resurrect stale cached sizes.
                         directoryCacheDao?.deleteByPath(fileModel.path)
+                        directoryCacheDao?.deleteByPathPrefix(fileModel.path + "/")
                     }
                 }
             }

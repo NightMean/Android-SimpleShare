@@ -11,6 +11,7 @@ import com.foss.simpleshare.ui.components.TooltipPosition
 import com.foss.simpleshare.feature.browser.components.computeDragSelection
 import com.foss.simpleshare.feature.browser.components.computeGridScrollProgress
 import com.foss.simpleshare.feature.browser.components.computeListScrollProgress
+import com.foss.simpleshare.feature.browser.components.DragSelectController
 import com.foss.simpleshare.feature.browser.components.gridItemIndexAtOffset
 import com.foss.simpleshare.feature.browser.components.listItemIndexAtOffset
 import com.foss.simpleshare.feature.browser.components.syncSelection
@@ -132,7 +133,7 @@ fun FileBrowserScreen(
     repository: FileRepository,
     currentPath: String,
     onPathChange: (String) -> Unit,
-    selectedFiles: MutableList<FileModel>, 
+    selectedFiles: androidx.compose.runtime.snapshots.SnapshotStateList<FileModel>,
     targetAppPackageName: String?,
     keepSelection: Boolean,
     showThumbnails: Boolean,
@@ -658,14 +659,17 @@ fun FileBrowserScreen(
                     )
                 }
             } else {
-                // Drag Selection Logic
-                var isDragSelecting by remember { mutableStateOf(false) }
-                var dragStartInfo by remember { mutableStateOf<Pair<Int, Set<String>>?>(null) } // Start Index + Initial Selection
-                var currentDragIndex by remember { mutableStateOf<Int?>(null) }
-                var lastDragPosition by remember { mutableStateOf<Offset?>(null) }
-
+                // Drag Selection Logic — state machine lives in DragSelectController
                 val hapticFeedback = LocalHapticFeedback.current
                 val density = LocalDensity.current
+
+                val dragSelectController = remember {
+                    DragSelectController(
+                        displayedFilesProvider = { displayedFiles },
+                        selectedFiles = selectedFiles,
+                        onQuickOpen = { index -> openFile(displayedFiles[index]) }
+                    )
+                }
 
                 // Helper to get index from offset
                 fun getItemIndexFromOffset(offset: Offset): Int? {
@@ -677,63 +681,48 @@ fun FileBrowserScreen(
                 }
 
                 // Auto Scroll Logic
-                LaunchedEffect(isDragSelecting, lastDragPosition) {
-                    if (isDragSelecting && lastDragPosition != null) {
+                LaunchedEffect(dragSelectController.isSelecting, dragSelectController.lastDragPosition) {
+                    if (dragSelectController.isSelecting && dragSelectController.lastDragPosition != null) {
                         val viewportHeight = if (isGridView) gridState.layoutInfo.viewportSize.height else listState.layoutInfo.viewportSize.height
                         val topHotZone = with(density) { 60.dp.toPx() }
                         val bottomHotZone = viewportHeight - topHotZone
-                        
-                        val y = lastDragPosition!!.y
-                        
+
+                        val y = dragSelectController.lastDragPosition!!.y
+
                         if (y < topHotZone) {
-                             while (isDragSelecting && lastDragPosition!!.y < topHotZone) {
-                                 val speed = (topHotZone - lastDragPosition!!.y) * 0.5f // rudimentary speed
+                             while (dragSelectController.isSelecting && dragSelectController.lastDragPosition!!.y < topHotZone) {
+                                 val speed = (topHotZone - dragSelectController.lastDragPosition!!.y) * 0.5f // rudimentary speed
                                  if (isGridView) gridState.scrollBy(-speed) else listState.scrollBy(-speed)
                                  // Update selection during scroll
-                                 currentDragIndex = getItemIndexFromOffset(lastDragPosition!!) ?: currentDragIndex
+                                 dragSelectController.onDrag(dragSelectController.lastDragPosition!!, getItemIndexFromOffset(dragSelectController.lastDragPosition!!))
                                  kotlinx.coroutines.delay(16)
                              }
                         } else if (y > bottomHotZone) {
-                            while (isDragSelecting && lastDragPosition!!.y > bottomHotZone) {
-                                 val speed = (lastDragPosition!!.y - bottomHotZone) * 0.5f
+                            while (dragSelectController.isSelecting && dragSelectController.lastDragPosition!!.y > bottomHotZone) {
+                                 val speed = (dragSelectController.lastDragPosition!!.y - bottomHotZone) * 0.5f
                                  if (isGridView) gridState.scrollBy(speed) else listState.scrollBy(speed)
                                  // Update selection during scroll
-                                 currentDragIndex = getItemIndexFromOffset(lastDragPosition!!) ?: currentDragIndex
+                                 dragSelectController.onDrag(dragSelectController.lastDragPosition!!, getItemIndexFromOffset(dragSelectController.lastDragPosition!!))
                                  kotlinx.coroutines.delay(16)
                             }
                         }
                     }
                 }
-                
+
                 // Update Selection Effect
-                LaunchedEffect(dragStartInfo, currentDragIndex) {
-                    val startInfo = dragStartInfo
-                    val currentIndex = currentDragIndex
-                    if (startInfo != null && currentIndex != null && currentIndex >= 0 && currentIndex < displayedFiles.size) {
-                        val (startIndex, initialSelection) = startInfo
-
-                        // New Selection = Initial + Range (pure computation)
-                        val newSelectionPaths = computeDragSelection(
-                            displayedFiles = displayedFiles,
-                            startIndex = startIndex,
-                            currentIndex = currentIndex,
-                            initialSelection = initialSelection
-                        )
-
-                        syncSelection(selectedFiles, newSelectionPaths, displayedFiles)
-                    }
+                LaunchedEffect(dragSelectController.dragStartInfo, dragSelectController.currentDragIndex) {
+                    dragSelectController.applySelection()
                 }
 
-                var hasDragged by remember { mutableStateOf(false) }
-                var dragStartPosition by remember { mutableStateOf<Offset?>(null) }
                 var lastDragEndTime by remember { androidx.compose.runtime.mutableLongStateOf(0L) } // Debounce for click after drag
                 var pressedItemIndex by remember { androidx.compose.runtime.mutableIntStateOf(-1) }
+                var dragStartPosition by remember { mutableStateOf<Offset?>(null) }
                 val viewConfiguration = androidx.compose.ui.platform.LocalViewConfiguration.current
 
                 fun handleFileClickWithDebounce(file: FileModel) {
                      // If a drag/long-press is active OR just finished, ignore this click
                      // Lowered debounce to 50ms to ensure manual taps are registered
-                     if (!isDragSelecting && System.currentTimeMillis() - lastDragEndTime > 50) {
+                     if (!dragSelectController.isSelecting && System.currentTimeMillis() - lastDragEndTime > 50) {
                          handleFileClick(file)
                      }
                 }
@@ -766,70 +755,34 @@ fun FileBrowserScreen(
                                 onDragStart = { offset ->
                                     val index = getItemIndexFromOffset(offset)
                                     if (index != null && index >= 0 && index < displayedFiles.size) {
-                                        val item = displayedFiles[index]
-                                        
-                                        // Disable long-press/drag on folders
-                                        if (!item.isDirectory) {
-                                            isDragSelecting = true
-                                            hasDragged = false // Reset
-                                            dragStartPosition = offset
-                                            
-                                            // Capture initial state
-                                            val initialSet = selectedFiles.map { it.path }.toSet()
-                                            dragStartInfo = index to initialSet
-                                            currentDragIndex = index
-                                            lastDragPosition = offset
-                                            
+                                        val started = displayedFiles[index].let { !it.isDirectory }
+                                        if (started) {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         }
+                                        dragStartPosition = offset
+                                        dragSelectController.onDragStart(index, offset)
                                     }
                                 },
-                                onDragEnd = { 
+                                onDragEnd = {
                                     lastDragEndTime = System.currentTimeMillis()
-                                    // If we haven't moved significantly, treat as just a Long Press Release (Quick Open)
-                                    if (quickOpen && !hasDragged && dragStartInfo != null) {
-                                        val startIndex = dragStartInfo!!.first
-                                        if (startIndex >= 0 && startIndex < displayedFiles.size) {
-                                            openFile(displayedFiles[startIndex])
-                                        }
-                                    }
-
-                                    isDragSelecting = false 
-                                    dragStartInfo = null
-                                    currentDragIndex = null
-                                    lastDragPosition = null
-                                    hasDragged = false
-                                    dragStartPosition = null
+                                    dragSelectController.onDragEnd(quickOpenEnabled = quickOpen)
                                 },
-                                onDragCancel = { 
+                                onDragCancel = {
                                     lastDragEndTime = System.currentTimeMillis()
-                                    isDragSelecting = false 
-                                    dragStartInfo = null
-                                    currentDragIndex = null
-                                    lastDragPosition = null
-                                    hasDragged = false
-                                    dragStartPosition = null
+                                    dragSelectController.onDragCancel()
                                 },
                                 onDrag = { change, _ ->
-                                    lastDragPosition = change.position
+                                    // Only treat as selection-drag once past touch slop;
+                                    // otherwise a long-press release becomes Quick Open.
                                     val start = dragStartPosition
-                                    
-                                    // Only mark as dragged if we moved beyond touch slop
-                                    if (start != null) {
-                                        val distance = (change.position - start).getDistance()
-                                        if (distance > viewConfiguration.touchSlop) {
-                                            hasDragged = true
-                                        }
+                                    val moved = if (start != null) {
+                                        (change.position - start).getDistance() > viewConfiguration.touchSlop
                                     } else {
-                                        // Fallback if start not captured (should impossible)
-                                        hasDragged = true
+                                        true // Fallback if start not captured (should be impossible)
                                     }
-                                    
-                                    if (hasDragged) {
-                                        val index = getItemIndexFromOffset(change.position)
-                                        if (index != null) {
-                                            currentDragIndex = index
-                                        }
+                                    if (moved) {
+                                        dragSelectController.markMoved()
+                                        dragSelectController.onDrag(change.position, getItemIndexFromOffset(change.position))
                                     }
                                 }
                             )
@@ -838,7 +791,7 @@ fun FileBrowserScreen(
                     if (isGridView) {
                         LazyVerticalGrid(
                             state = gridState,
-                            userScrollEnabled = !isDragSelecting, // Prevent scroll interference during drag
+                            userScrollEnabled = !dragSelectController.isSelecting, // Prevent scroll interference during drag
                             columns = GridCells.Adaptive(minSize = 100.dp),
                             contentPadding = PaddingValues(8.dp),
                             modifier = Modifier.fillMaxSize()
@@ -859,7 +812,7 @@ fun FileBrowserScreen(
                     } else {
                         LazyColumn(
                             state = listState,
-                            userScrollEnabled = !isDragSelecting, // Prevent scroll interference during drag
+                            userScrollEnabled = !dragSelectController.isSelecting, // Prevent scroll interference during drag
                             contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp, start = 8.dp, end = 24.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {

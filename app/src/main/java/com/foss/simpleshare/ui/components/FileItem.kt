@@ -33,6 +33,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.res.stringResource
+import com.foss.simpleshare.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -102,7 +104,7 @@ fun FileListItem(
             } else {
                 // Show placeholder "..." while size/count are being calculated (-1)
                 val sizeText = if (file.size == -1L) "..." else formatFileSize(file.size)
-                val countText = if (file.itemCount == -1) "…" else "${file.itemCount} items"
+                val countText = if (file.itemCount == -1) "…" else stringResource(R.string.item_count_format, file.itemCount)
                  Text(
                     text = "$countText • $sizeText",
                     style = MaterialTheme.typography.bodySmall,

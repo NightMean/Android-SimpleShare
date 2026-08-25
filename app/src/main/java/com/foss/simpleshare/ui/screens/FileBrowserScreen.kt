@@ -525,12 +525,12 @@ fun FileBrowserScreen(
                 ) {
                     // View Toggle
                     TooltipIconButton(onClick = { onViewModeChange(!isGridView) }, tooltip = stringResource(if (isGridView) R.string.tooltip_list_view else R.string.tooltip_grid_view), position = TooltipPosition.Above) {
-                        Icon(if (isGridView) Icons.Default.List else Icons.Default.GridView, contentDescription = "Toggle View")
+                        Icon(if (isGridView) Icons.Default.List else Icons.Default.GridView, contentDescription = stringResource(R.string.cd_toggle_view))
                     }
 
                     // Refresh
                     TooltipIconButton(onClick = { refreshFiles() }, tooltip = stringResource(R.string.tooltip_refresh), position = TooltipPosition.Above) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.cd_refresh))
                     }
 
                     // Select All
@@ -556,13 +556,13 @@ fun FileBrowserScreen(
                              }
                         }
                     }, tooltip = stringResource(R.string.tooltip_select_all), position = TooltipPosition.Above) {
-                        Icon(Icons.Default.SelectAll, contentDescription = "Select All")
+                        Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.cd_select_all))
                     }
 
                     // Sort
                     Box {
                         TooltipIconButton(onClick = { showSortMenu = true }, tooltip = stringResource(R.string.tooltip_sort), position = TooltipPosition.Above) {
-                            Icon(Icons.Default.Sort, contentDescription = "Sort")
+                            Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.cd_sort))
                         }
                         DropdownMenu(
                             expanded = showSortMenu,
@@ -614,7 +614,7 @@ fun FileBrowserScreen(
 
                     // Search
                     TooltipIconButton(onClick = { isSearchActive = true }, tooltip = stringResource(R.string.tooltip_search), position = TooltipPosition.Above) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                        Icon(Icons.Default.Search, contentDescription = stringResource(R.string.cd_search))
                     }
                 }
             }
@@ -945,7 +945,7 @@ fun FileBrowserScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showLowSpaceDialog = false }) {
-                    Text("No")
+                    Text(stringResource(R.string.action_no))
                 }
             }
         )

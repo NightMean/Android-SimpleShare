@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.foss.simpleshare.data.AppModel
+import androidx.compose.ui.res.stringResource
+import com.foss.simpleshare.R
 import com.foss.simpleshare.ui.components.rememberDrawablePainter
 import kotlinx.coroutines.launch
 
@@ -73,7 +75,7 @@ fun AppList(
                     },
                     trailingContent = {
                         if (isSelected) {
-                            Icon(Icons.Default.Check, contentDescription = "Selected", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.cd_selected), tint = MaterialTheme.colorScheme.primary)
                         }
                     },
                     colors = if (isSelected) ListItemDefaults.colors(

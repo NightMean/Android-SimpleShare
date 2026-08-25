@@ -101,4 +101,31 @@
     <string name="action_turn_off">Turn Off</string>
     <string name="toast_invalid_path">Invalid default folder path. Please enter a valid directory.</string>
     <string name="toast_need_extension">Please enter at least one file extension (e.g. pdf, zip, 7z)</string>
+
+    <!-- Setup -->
+    <string name="setup_subtitle">Easy file sharing to your favorite app</string>
+    <string name="setup_step_permissions_title">1. Grant Permissions</string>
+    <string name="setup_step_permissions_desc">We need access to your files to share them.</string>
+    <string name="action_granted">Granted</string>
+    <string name="action_grant_access">Grant Access</string>
+    <string name="setup_step_target_app_title">2. Select Target App</string>
+    <string name="setup_step_target_app_desc">Choose the app you want to share files to.</string>
+    <string name="action_change_app">Change App</string>
+    <string name="current_target_label">Current Target Share App:</string>
+    <string name="setup_step_visibility_title">3. File Visibility</string>
+    <string name="setup_step_visibility_desc">Choose what files to see. You can change this anytime in Settings.</string>
+    <string name="action_get_started">Get Started</string>
+
+    <!-- Filter mode selector -->
+    <string name="filter_all_title">Everything</string>
+    <string name="filter_all_desc">Show all files in current folder</string>
+    <string name="filter_media_title">Media Only</string>
+    <string name="media_extensions_list">jpg, jpeg, png, gif, mp4, mkv, webm, avi, heic, webp</string>
+    <string name="filter_custom_title">Custom Extensions</string>
+    <string name="filter_extensions_label">Extensions (comma separated)</string>
+    <string name="filter_extensions_placeholder">e.g. pdf, zip, .apk</string>
+    <string name="filter_extensions_hint">Supports extensions with or without dot (e.g. jpg, .pdf)</string>
+
+    <!-- File item -->
+    <string name="item_count_format">%1$d items</string>
 </resources>

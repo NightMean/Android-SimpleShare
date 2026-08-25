@@ -44,6 +44,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.foss.simpleshare.data.AppModel
 import com.foss.simpleshare.data.AppRepository
+import androidx.compose.ui.res.stringResource
+import com.foss.simpleshare.R
 import com.foss.simpleshare.settings.FilterMode
 import com.foss.simpleshare.ui.components.AppList
 
@@ -177,14 +179,14 @@ fun SetupScreen(
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "SimpleShare",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Easy file sharing to your favorite app",
+                    text = stringResource(R.string.setup_subtitle),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -193,8 +195,8 @@ fun SetupScreen(
                 
                 // Step 1: Permission
                 SetupItem(
-                    title = "1. Grant Permissions",
-                    description = "We need access to your files to share them.",
+                    title = stringResource(R.string.setup_step_permissions_title),
+                    description = stringResource(R.string.setup_step_permissions_desc),
                     action = {
                         if (permissionGranted) {
                              Button(
@@ -207,11 +209,11 @@ fun SetupScreen(
                              ) {
                                  Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                                  Spacer(modifier = Modifier.width(8.dp))
-                                 Text("Granted")
+                                 Text(stringResource(R.string.action_granted))
                              }
                         } else {
                             Button(onClick = onRequestPermission) {
-                                Text("Grant Access")
+                                Text(stringResource(R.string.action_grant_access))
                             }
                         }
                     }
@@ -232,16 +234,16 @@ fun SetupScreen(
 
                 // Step 2: Target App
                 SetupItem(
-                    title = "2. Select Target App",
-                    description = "Choose the app you want to share files to.",
+                    title = stringResource(R.string.setup_step_target_app_title),
+                    description = stringResource(R.string.setup_step_target_app_desc),
                     action = {
                          if (selectedTargetApp != null) {
                              Button(onClick = onNavigateToAppSelection) {
-                                 Text("Change App")
+                                 Text(stringResource(R.string.action_change_app))
                              }
                          } else {
                              Button(onClick = onNavigateToAppSelection) {
-                                 Text("Select App")
+                                 Text(stringResource(R.string.action_select_app))
                              }
                          }
                     }
@@ -254,7 +256,7 @@ fun SetupScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Current Target Share App: ", style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(R.string.current_target_label), style = MaterialTheme.typography.bodyMedium)
                             Spacer(modifier = Modifier.width(8.dp))
                             Image(
                                 painter = com.foss.simpleshare.ui.components.rememberDrawablePainter(drawable = currentAppModel.icon),
@@ -278,12 +280,12 @@ fun SetupScreen(
 
                 // Step 3: File Visibility
                 Text(
-                    text = "3. File Visibility",
+                    text = stringResource(R.string.setup_step_visibility_title),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Text(
-                    text = "Choose what files to see. You can change this anytime in Settings.",
+                    text = stringResource(R.string.setup_step_visibility_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
@@ -305,7 +307,7 @@ fun SetupScreen(
                         if (currentFilterMode == FilterMode.CUSTOM) {
                             val hasValidChar = currentCustomExtensions.any { it.isLetterOrDigit() }
                             if (!hasValidChar) {
-                                android.widget.Toast.makeText(context, "Please enter at least one file extension (e.g. pdf, zip, 7z)", android.widget.Toast.LENGTH_LONG).show()
+                                android.widget.Toast.makeText(context, context.getString(R.string.toast_need_extension), android.widget.Toast.LENGTH_LONG).show()
                                 return@Button
                             }
                         }
@@ -314,7 +316,7 @@ fun SetupScreen(
                     enabled = permissionGranted && selectedTargetApp != null,
                     modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
-                    Text("Get Started")
+                    Text(stringResource(R.string.action_get_started))
                 }
             }
         }

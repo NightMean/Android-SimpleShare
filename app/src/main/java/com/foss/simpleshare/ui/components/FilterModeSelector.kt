@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.ui.res.stringResource
+import com.foss.simpleshare.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -61,12 +63,12 @@ fun FilterModeSelector(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "Everything",
+                        text = stringResource(R.string.filter_all_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = if (isAllSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Show all files in current folder", 
+                        text = stringResource(R.string.filter_all_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -103,7 +105,7 @@ fun FilterModeSelector(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "Media Only",
+                        text = stringResource(R.string.filter_media_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = if (isMediaSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
@@ -112,7 +114,7 @@ fun FilterModeSelector(
                     // Marquee Text
                     // Using basicMarquee for circular animation
                     // Constructing string
-                    val extensions = "jpg, jpeg, png, gif, mp4, mkv, webm, avi, heic, webp"
+                    val extensions = stringResource(R.string.media_extensions_list)
                     Text(
                         text = extensions, 
                         style = MaterialTheme.typography.bodySmall,
@@ -152,7 +154,7 @@ fun FilterModeSelector(
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "Custom Extensions",
+                        text = stringResource(R.string.filter_custom_title),
                         style = MaterialTheme.typography.titleMedium,
                          color = if (isCustomSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
@@ -168,8 +170,8 @@ fun FilterModeSelector(
                                 onCustomExtensionsChanged(it) 
                             }
                         },
-                        label = { Text("Extensions (comma separated)") },
-                        placeholder = { Text("e.g. pdf, zip, .apk") },
+                        label = { Text(stringResource(R.string.filter_extensions_label)) },
+                        placeholder = { Text(stringResource(R.string.filter_extensions_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         isError = isError,
@@ -182,7 +184,7 @@ fun FilterModeSelector(
                      )
                      Spacer(modifier = Modifier.height(4.dp))
                      Text(
-                         text = "Supports extensions with or without dot (e.g. jpg, .pdf)",
+                         text = stringResource(R.string.filter_extensions_hint),
                          style = MaterialTheme.typography.labelSmall,
                          color = MaterialTheme.colorScheme.onSurfaceVariant
                      )

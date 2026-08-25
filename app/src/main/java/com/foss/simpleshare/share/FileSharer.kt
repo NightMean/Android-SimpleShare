@@ -29,56 +29,8 @@ object FileSharer {
     ) {
         if (files.isEmpty()) return
 
-        val uris = ArrayList<Uri>()
         try {
-            files.forEach { fileModel ->
-                val uri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.provider",
-                    fileModel.file
-                )
-                uris.add(uri)
-            }
-
-            // Resolve the MIME from actual extensions; a wrong type (e.g. a PDF
-            // announced as image/*) makes target apps reject or mis-handle the file.
-            val mimeTypes = ShareMimeResolver.resolveMimeTypes(files.map { it.extension }.toSet())
-
-            val intent = Intent().apply {
-                if (uris.size == 1) {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_STREAM, uris[0])
-                } else {
-                    action = Intent.ACTION_SEND_MULTIPLE
-                    putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-                }
-                type = mimeTypes.first()
-
-                // Older Android versions only honor FLAG_GRANT_READ_URI_PERMISSION for the
-                // first EXTRA_STREAM URI, so the target app sees an empty selection for
-                // ACTION_SEND_MULTIPLE. Attaching every URI via ClipData grants read
-                // access to all of them.
-                if (uris.isNotEmpty()) {
-                    val clipData = ClipData.newRawUri(null, uris[0])
-                    for (i in 1 until uris.size) {
-                        clipData.addItem(ClipData.Item(uris[i]))
-                    }
-                    this.clipData = clipData
-                }
-
-                if (targetAppPackageName != null) {
-                    val slashIndex = targetAppPackageName.indexOf('/')
-                    if (slashIndex != -1 && targetAppPackageName.count { it == '/' } == 1) {
-                        component = android.content.ComponentName(
-                            targetAppPackageName.substringBefore('/'),
-                            targetAppPackageName.substringAfter('/')
-                        )
-                    } else {
-                        setPackage(targetAppPackageName)
-                    }
-                }
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
+            val intent = buildShareIntent(context, files, targetAppPackageName)
 
             val shareIntent = if (targetAppPackageName == null) {
                 Intent.createChooser(intent, "Share files")
@@ -94,6 +46,61 @@ object FileSharer {
         } catch (e: Exception) {
             Toast.makeText(context, context.getString(R.string.error_preparing_share, e.message), Toast.LENGTH_LONG).show()
             e.printStackTrace()
+        }
+    }
+
+    /**
+     * Build the share intent without starting anything — visible for testing.
+     */
+    fun buildShareIntent(
+        context: Context,
+        files: List<FileModel>,
+        targetAppPackageName: String?
+    ): Intent {
+        val uris = ArrayList<Uri>()
+        files.forEach { fileModel ->
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                fileModel.file
+            )
+            uris.add(uri)
+        }
+
+        // Resolve the MIME from actual extensions; a wrong type (e.g. a PDF
+        // announced as an image) makes target apps reject or mis-handle the file.
+        val mimeTypes = ShareMimeResolver.resolveMimeTypes(files.map { it.extension }.toSet())
+
+        return Intent().apply {
+            if (uris.size == 1) {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, uris[0])
+            } else {
+                action = Intent.ACTION_SEND_MULTIPLE
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+            }
+            type = mimeTypes.first()
+
+            if (uris.isNotEmpty()) {
+                val clipData = ClipData.newRawUri(null, uris[0])
+                for (i in 1 until uris.size) {
+                    clipData.addItem(ClipData.Item(uris[i]))
+                }
+                this.clipData = clipData
+            }
+
+            if (targetAppPackageName != null) {
+                val slashIndex = targetAppPackageName.indexOf('/')
+                if (slashIndex != -1 && targetAppPackageName.count { it == '/' } == 1) {
+                    component = android.content.ComponentName(
+                        targetAppPackageName.substringBefore('/'),
+                        targetAppPackageName.substringAfter('/')
+                    )
+                } else {
+                    setPackage(targetAppPackageName)
+                }
+            }
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
     }
 }

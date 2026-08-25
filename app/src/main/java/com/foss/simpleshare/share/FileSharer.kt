@@ -14,9 +14,6 @@ import com.foss.simpleshare.data.FileModel
  */
 object FileSharer {
 
-    /** Extensions treated as video when choosing the coarse share MIME type. */
-    private val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "webm", "avi")
-
     /**
      * Share [files] with the configured target app.
      *
@@ -42,6 +39,10 @@ object FileSharer {
                 uris.add(uri)
             }
 
+            // Resolve the MIME from actual extensions; a wrong type (e.g. a PDF
+            // announced as image/*) makes target apps reject or mis-handle the file.
+            val mimeTypes = ShareMimeResolver.resolveMimeTypes(files.map { it.extension }.toSet())
+
             val intent = Intent().apply {
                 if (uris.size == 1) {
                     action = Intent.ACTION_SEND
@@ -50,9 +51,7 @@ object FileSharer {
                     action = Intent.ACTION_SEND_MULTIPLE
                     putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
                 }
-                val mimeType =
-                    if (files.any { it.extension in VIDEO_EXTENSIONS }) "video/*" else "image/*"
-                type = mimeType
+                type = mimeTypes.first()
 
                 // Older Android versions only honor FLAG_GRANT_READ_URI_PERMISSION for the
                 // first EXTRA_STREAM URI, so the target app sees an empty selection for

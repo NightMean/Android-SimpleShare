@@ -46,8 +46,21 @@ You can download **SimpleShare** directly from the GitHub releases page or by ta
 
 *   [Jetpack Compose](https://developer.android.com/jetpack/compose) - Modern toolkit for building native UI.
 *   [Glide](https://github.com/bumptech/glide) - Fast and efficient image loading framework.
-*   [Accompanist](https://google.github.io/accompanist/) - Utilities for Jetpack Compose (Drawable Painter).
 *   [AndroidX](https://developer.android.com/jetpack/androidx) - Core Android libraries and lifecycle components.
+
+## Building
+
+Requires JDK 17 and Android SDK 35. Use the included Gradle wrapper:
+
+```bash
+./gradlew assembleDebug
+./gradlew testDebugUnitTest
+```
+
+## Localization
+
+The app is English-only by design; UI strings are not extracted to resources yet.
+Translations are welcome once strings are externalized.
 
 
 ## Donations

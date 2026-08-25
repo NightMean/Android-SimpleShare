@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 /**
  * Room Database for the app. Contains the DirectoryCache table for folder size caching.
  */
-@Database(entities = [DirectoryCache::class], version = 1, exportSchema = false)
+@Database(entities = [DirectoryCache::class], version = 1, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
     
     abstract fun directoryCacheDao(): DirectoryCacheDao

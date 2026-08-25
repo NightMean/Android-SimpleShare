@@ -101,6 +101,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.foss.simpleshare.data.FileModel
 import com.foss.simpleshare.data.FileRepository
 import com.foss.simpleshare.data.SortOption
+import com.foss.simpleshare.data.filterBySearch
+import com.foss.simpleshare.data.sortFiles
 import com.foss.simpleshare.share.FileSharer
 import com.foss.simpleshare.ui.components.FileGridItem
 import com.foss.simpleshare.ui.components.FileListItem
@@ -110,7 +112,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.Locale
 
 import androidx.compose.ui.res.painterResource
 import com.foss.simpleshare.R
@@ -294,34 +295,15 @@ fun FileBrowserScreen(
     }
     
 
-    // Filter and Sort Logic
-    // Filter and Sort Logic
-
-    // Filter and Sort Logic
+    // Filter and Sort Logic (pure functions, see data/FileListOps.kt)
     val displayedFiles by remember(rawFiles, searchQuery, sortOption, isSortAscending, sortFoldersFirst) {
         derivedStateOf {
-            var result = if (searchQuery.isBlank()) {
-                rawFiles
-            } else {
-                rawFiles.filter { it.name.contains(searchQuery, ignoreCase = true) }
-            }
-
-            // Apply Sort Criterion
-            result = when (sortOption) {
-                SortOption.NAME -> if (isSortAscending) result.sortedBy { it.name.lowercase(Locale.getDefault()) } else result.sortedByDescending { it.name.lowercase(Locale.getDefault()) }
-                SortOption.SIZE -> if (isSortAscending) result.sortedBy { it.size } else result.sortedByDescending { it.size }
-                SortOption.DATE -> if (isSortAscending) result.sortedBy { it.file.lastModified() } else result.sortedByDescending { it.file.lastModified() }
-                SortOption.TYPE -> if (isSortAscending) result.sortedBy { it.extension } else result.sortedByDescending { it.extension }
-            }
-
-            // Apply Folders First Priority
-            if (sortFoldersFirst) {
-                // False < True. So !isDirectory (False for folder) < !isDirectory (True for file)
-                // Folders come first.
-                result = result.sortedBy { !it.isDirectory }
-            }
-
-            result
+            sortFiles(
+                files = filterBySearch(rawFiles, searchQuery),
+                option = sortOption,
+                ascending = isSortAscending,
+                foldersFirst = sortFoldersFirst
+            )
         }
     }
 

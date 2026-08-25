@@ -1,4 +1,4 @@
-package com.foss.simpleshare.ui.components
+package com.foss.simpleshare.feature.browser.components
 
 import com.foss.simpleshare.data.FileModel
 

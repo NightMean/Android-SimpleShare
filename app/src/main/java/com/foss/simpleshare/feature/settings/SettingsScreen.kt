@@ -1,4 +1,4 @@
-package com.foss.simpleshare.ui.screens
+package com.foss.simpleshare.feature.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*

@@ -38,9 +38,9 @@ import com.foss.simpleshare.settings.AppSettings
 import com.foss.simpleshare.settings.SettingsStore
 import com.foss.simpleshare.settings.resolveAllowedExtensions
 import com.foss.simpleshare.ui.Screen
-import com.foss.simpleshare.ui.screens.FileBrowserScreen
-import com.foss.simpleshare.ui.screens.SettingsScreen
-import com.foss.simpleshare.ui.screens.SetupScreen
+import com.foss.simpleshare.feature.browser.FileBrowserScreen
+import com.foss.simpleshare.feature.settings.SettingsScreen
+import com.foss.simpleshare.feature.setup.SetupScreen
 import com.foss.simpleshare.ui.theme.SimpleShareTheme
 
 class MainActivity : ComponentActivity() {

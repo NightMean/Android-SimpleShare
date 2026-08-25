@@ -1,4 +1,4 @@
-package com.foss.simpleshare.ui.components
+package com.foss.simpleshare.feature.browser.components
 
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.grid.LazyGridLayoutInfo

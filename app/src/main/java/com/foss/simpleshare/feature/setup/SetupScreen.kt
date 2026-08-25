@@ -1,4 +1,4 @@
-package com.foss.simpleshare.ui.screens
+package com.foss.simpleshare.feature.setup
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

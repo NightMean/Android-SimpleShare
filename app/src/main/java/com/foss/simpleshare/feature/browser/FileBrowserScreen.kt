@@ -1,4 +1,4 @@
-package com.foss.simpleshare.ui.screens
+package com.foss.simpleshare.feature.browser
 
 import android.app.Activity
 import android.content.Intent
@@ -8,12 +8,12 @@ import android.widget.Toast
 import com.foss.simpleshare.ui.components.FastScrollbar
 import com.foss.simpleshare.ui.components.TooltipIconButton
 import com.foss.simpleshare.ui.components.TooltipPosition
-import com.foss.simpleshare.ui.components.computeDragSelection
-import com.foss.simpleshare.ui.components.computeGridScrollProgress
-import com.foss.simpleshare.ui.components.computeListScrollProgress
-import com.foss.simpleshare.ui.components.gridItemIndexAtOffset
-import com.foss.simpleshare.ui.components.listItemIndexAtOffset
-import com.foss.simpleshare.ui.components.syncSelection
+import com.foss.simpleshare.feature.browser.components.computeDragSelection
+import com.foss.simpleshare.feature.browser.components.computeGridScrollProgress
+import com.foss.simpleshare.feature.browser.components.computeListScrollProgress
+import com.foss.simpleshare.feature.browser.components.gridItemIndexAtOffset
+import com.foss.simpleshare.feature.browser.components.listItemIndexAtOffset
+import com.foss.simpleshare.feature.browser.components.syncSelection
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.Image
@@ -110,8 +110,8 @@ import com.foss.simpleshare.data.SortOption
 import com.foss.simpleshare.data.filterBySearch
 import com.foss.simpleshare.data.sortFiles
 import com.foss.simpleshare.share.FileSharer
-import com.foss.simpleshare.ui.components.FileGridItem
-import com.foss.simpleshare.ui.components.FileListItem
+import com.foss.simpleshare.feature.browser.components.FileGridItem
+import com.foss.simpleshare.feature.browser.components.FileListItem
 import com.foss.simpleshare.utils.StorageUtils
 import com.foss.simpleshare.ui.components.rememberDrawablePainter
 import kotlinx.coroutines.Dispatchers

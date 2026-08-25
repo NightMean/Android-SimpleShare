@@ -11,7 +11,10 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <!-- Write is often needed for older androids if we were editing, but user said "read-only", basically sharing. 
          However, for broad access on <11, READ_EXTERNAL_STORAGE is key. -->
-    
+    <!-- NOTE: POST_NOTIFICATIONS is intentionally not declared on main; nothing posts
+         notifications here. The GPhotos-upload-detection branch must declare it AND
+         request it at runtime (API 33+ silently drops notifications otherwise). -->
+
     <queries>
         <intent>
             <action android:name="android.intent.action.SEND" />

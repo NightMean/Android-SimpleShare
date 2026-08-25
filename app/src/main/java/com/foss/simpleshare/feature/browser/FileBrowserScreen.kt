@@ -122,6 +122,7 @@ import java.io.File
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.foss.simpleshare.R
 
 
@@ -148,13 +149,16 @@ fun FileBrowserScreen(
     sortFoldersFirst: Boolean,
     onSortChange: (SortOption, Boolean, Boolean) -> Unit
 ) {
-    var rawFiles by remember { mutableStateOf(emptyList<FileModel>()) }
-    var isLoading by remember { mutableStateOf(true) } // Track loading state
-    // var isGridView by remember { mutableStateOf(false) } // Hoisted to MainActivity
+    // File listing state is owned by the ViewModel (survives navigation and rotation)
+    val browserViewModel: BrowserViewModel = viewModel(
+        key = "browser",
+        factory = BrowserViewModel.Factory(repository)
+    )
+    val rawFiles = browserViewModel.rawFiles
+    val isLoading = browserViewModel.isLoading
+
     var showLowSpaceDialog by remember { mutableStateOf(false) }
 
-    val coroutineScope = rememberCoroutineScope() // Moved up
-    
     // Deletion State
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
@@ -167,10 +171,10 @@ fun FileBrowserScreen(
     var showSortMenu by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    
+
     // Load badge icon
     var targetAppIcon by remember { mutableStateOf<android.graphics.drawable.Drawable?>(null) }
-    
+
     LaunchedEffect(targetAppPackageName) {
         if (targetAppPackageName != null) {
             withContext(Dispatchers.IO) {
@@ -196,58 +200,38 @@ fun FileBrowserScreen(
         }
     }
 
-
-
-    // Active refresh job so a double-tap on Refresh cannot race itself
-    var refreshJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
-
     fun refreshFiles() {
-        refreshJob?.cancel()
-        refreshJob = coroutineScope.launch {
-            isLoading = true
-            // Directory listing does disk I/O; keep it off the main thread
-            val freshFiles = repository.listFilesWithCachedSizes(currentPath, allowedExtensions)
+        browserViewModel.load(currentPath, allowedExtensions)
 
-            rawFiles = freshFiles
-
-            // Prune selection: Remove files that no longer exist
-            val iterator = selectedFiles.iterator()
-            var removedCount = 0
-            while (iterator.hasNext()) {
-                val file = iterator.next()
-                if (!file.file.exists()) {
-                    iterator.remove()
-                    removedCount++
-                }
+        // Prune selection: Remove files that no longer exist on disk
+        val iterator = selectedFiles.iterator()
+        var removedCount = 0
+        while (iterator.hasNext()) {
+            val file = iterator.next()
+            if (!file.file.exists()) {
+                iterator.remove()
+                removedCount++
             }
+        }
 
-            if (removedCount > 0) {
-                Toast.makeText(context, context.getString(R.string.toast_selection_updated, removedCount), Toast.LENGTH_SHORT).show()
-            }
-            isLoading = false
+        if (removedCount > 0) {
+            Toast.makeText(context, context.getString(R.string.toast_selection_updated, removedCount), Toast.LENGTH_SHORT).show()
         }
     }
-    
+
     // Deletion Logic
     fun onDeleteConfirmed() {
         showDeleteConfirmDialog = false
         isDeleting = true
-        
+
         val filesToDelete = selectedFiles.toList() // Copy list
-        
-        coroutineScope.launch {
-            // If many files, maybe show progress logic, but deleteFiles is atomic-ish in our repo currently.
-            // For better UX on large lists, we could chunk it or move logic here.
-            // For now, simple bulk delete.
-            val count = repository.deleteFiles(filesToDelete)
-            
-            withContext(Dispatchers.Main) {
-                isDeleting = false
-                deletedCount = count
-                Toast.makeText(context, context.getString(R.string.toast_deleted, count), Toast.LENGTH_SHORT).show()
-                selectedFiles.clear()
-                refreshFiles()
-            }
+
+        browserViewModel.delete(filesToDelete) { count ->
+            isDeleting = false
+            deletedCount = count
+            Toast.makeText(context, context.getString(R.string.toast_deleted, count), Toast.LENGTH_SHORT).show()
+            selectedFiles.clear()
+            refreshFiles()
         }
     }
 
@@ -285,39 +269,12 @@ fun FileBrowserScreen(
         )
     }
 
-    // Load files (with cached sizes applied for folders)
+    // Load files (with cached sizes applied for folders); the ViewModel also
+    // resolves missing folder details (sizes, child counts) asynchronously.
     LaunchedEffect(currentPath, allowedExtensions) {
-        isLoading = true
-        rawFiles = repository.listFilesWithCachedSizes(currentPath, allowedExtensions)
-        isLoading = false
+        browserViewModel.load(currentPath, allowedExtensions)
     }
 
-    // Async folder details (size + child count): check cache first, then calculate if needed
-    LaunchedEffect(rawFiles) {
-        val pendingFolders = rawFiles.filter { it.isDirectory && (it.size == -1L || it.itemCount == -1) }
-        if (pendingFolders.isEmpty()) return@LaunchedEffect
-
-        pendingFolders.forEach { folder ->
-            launch {
-                val size = if (folder.size == -1L) {
-                    withContext(Dispatchers.IO) {
-                        repository.getCachedSize(folder.path)
-                            ?: repository.calculateAndCacheSize(folder.path)
-                    }
-                } else folder.size
-
-                val itemCount = if (folder.itemCount == -1) {
-                    // file.list() reads names only — cheaper than listFiles()
-                    withContext(Dispatchers.IO) { java.io.File(folder.path).list()?.size ?: 0 }
-                } else folder.itemCount
-
-                rawFiles = rawFiles.map { file ->
-                    if (file.path == folder.path) file.copy(size = size, itemCount = itemCount) else file
-                }
-            }
-        }
-    }
-    
 
     // Filter and Sort Logic (pure functions, see data/FileListOps.kt)
     val displayedFiles by remember(rawFiles, searchQuery, sortOption, isSortAscending, sortFoldersFirst) {
@@ -408,7 +365,7 @@ fun FileBrowserScreen(
 
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
-    // val coroutineScope = rememberCoroutineScope() // Moved up to line 142
+    val coroutineScope = rememberCoroutineScope()
     
     // Auto-scroll to top when sort options change
     LaunchedEffect(sortOption, isSortAscending, sortFoldersFirst) {

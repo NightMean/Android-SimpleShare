@@ -5,6 +5,7 @@
     <!-- Common actions -->
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
     <string name="action_yes">Yes</string>
     <string name="action_no">No</string>
@@ -63,4 +64,41 @@
     <string name="invalid_path_message">The default path you set (\"%1$s\") no longer exists. The app will reset to the main storage directory.</string>
     <string name="toast_settings_saved">Settings saved</string>
     <string name="toast_reset_defaults">Reset to defaults.</string>
+
+    <!-- Settings -->
+    <string name="page_title_settings">Settings</string>
+    <string name="search_apps_placeholder">Search apps…</string>
+    <string name="header_target_app">Target App</string>
+    <string name="state_loading">Loading…</string>
+    <string name="state_app_not_found">App not found (%1$s)</string>
+    <string name="state_no_app_selected">No app selected</string>
+    <string name="cd_not_found">Not Found</string>
+    <string name="header_general">General</string>
+    <string name="path_label_default">Default Path</string>
+    <string name="path_label_invalid">Invalid Path</string>
+    <string name="action_use_current">Use Current</string>
+    <string name="setting_keep_selection">Keep Selection</string>
+    <string name="setting_keep_selection_desc">Maintain selection across folders</string>
+    <string name="setting_thumbnails">Thumbnails</string>
+    <string name="setting_thumbnails_desc">Show image previews</string>
+    <string name="setting_validate_free_space">Validate Free Space</string>
+    <string name="setting_validate_free_space_desc">Check if internal storage has enough space for a copy of the selected files (Some apps might copy shared files to cache)</string>
+    <string name="setting_quick_open">Quick Open</string>
+    <string name="setting_quick_open_desc">Long press to open file</string>
+    <string name="header_file_visibility">File Visibility</string>
+    <string name="header_support">Support</string>
+    <string name="item_github_project">GitHub Project</string>
+    <string name="item_github_project_desc">View source code and contributors</string>
+    <string name="item_report_issue">Report an Issue</string>
+    <string name="item_report_issue_desc">Found a bug? Let us know on GitHub</string>
+    <string name="action_reset_to_defaults">Reset to Defaults</string>
+    <string name="version_format">Version %1$s (%2$s)</string>
+    <string name="dialog_unsaved_title">Unsaved Changes</string>
+    <string name="dialog_unsaved_message">You have unsaved changes. Do you want to save them?</string>
+    <string name="action_discard">Discard</string>
+    <string name="dialog_disable_keep_selection_title">Disable Keep Selection?</string>
+    <string name="dialog_disable_keep_selection_message">Disabling this will clear your current selection when you save changes.</string>
+    <string name="action_turn_off">Turn Off</string>
+    <string name="toast_invalid_path">Invalid default folder path. Please enter a valid directory.</string>
+    <string name="toast_need_extension">Please enter at least one file extension (e.g. pdf, zip, 7z)</string>
 </resources>

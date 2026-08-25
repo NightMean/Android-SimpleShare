@@ -23,7 +23,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.io.File
+import androidx.compose.ui.res.stringResource
 import com.foss.simpleshare.BuildConfig
+import com.foss.simpleshare.R
 import com.foss.simpleshare.data.AppModel
 import com.foss.simpleshare.data.AppRepository
 import com.foss.simpleshare.settings.AppSettings
@@ -89,7 +91,7 @@ fun SettingsScreen(
         val file = File(currentPathText)
         if (!file.exists() || !file.isDirectory) {
             isPathError = true
-            android.widget.Toast.makeText(context, "Invalid default folder path. Please enter a valid directory.", android.widget.Toast.LENGTH_LONG).show()
+            android.widget.Toast.makeText(context, context.getString(R.string.toast_invalid_path), android.widget.Toast.LENGTH_LONG).show()
             return
         }
 
@@ -97,7 +99,7 @@ fun SettingsScreen(
             val hasValidChar = customExtensions.any { it.isLetterOrDigit() }
             if (!hasValidChar) {
                 isCustomExtError = true
-                android.widget.Toast.makeText(context, "Please enter at least one file extension (e.g. pdf, zip, 7z)", android.widget.Toast.LENGTH_LONG).show()
+                android.widget.Toast.makeText(context, context.getString(R.string.toast_need_extension), android.widget.Toast.LENGTH_LONG).show()
                 return
             }
         }
@@ -151,19 +153,19 @@ fun SettingsScreen(
     if (showUnsavedDialog) {
         AlertDialog(
             onDismissRequest = { showUnsavedDialog = false },
-            title = { Text("Unsaved Changes") },
-            text = { Text("You have unsaved changes. Do you want to save them?") },
+            title = { Text(stringResource(R.string.dialog_unsaved_title)) },
+            text = { Text(stringResource(R.string.dialog_unsaved_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     showUnsavedDialog = false
                     validateAndSave(goBackAfterSave = true)
-                }) { Text("Save") }
+                }) { Text(stringResource(R.string.action_save)) }
             },
             dismissButton = {
                 TextButton(onClick = { 
                     showUnsavedDialog = false
                     onBack() 
-                }) { Text("Discard") }
+                }) { Text(stringResource(R.string.action_discard)) }
             },
         )
     }
@@ -183,8 +185,8 @@ fun SettingsScreen(
     if (showClearSelectionWarning) {
         AlertDialog(
             onDismissRequest = { showClearSelectionWarning = false },
-            title = { Text("Disable Keep Selection?") },
-            text = { Text("Disabling this will clear your current selection when you save changes.") },
+            title = { Text(stringResource(R.string.dialog_disable_keep_selection_title)) },
+            text = { Text(stringResource(R.string.dialog_disable_keep_selection_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -192,7 +194,7 @@ fun SettingsScreen(
                         showClearSelectionWarning = false
                     }
                 ) {
-                    Text("Turn Off")
+                    Text(stringResource(R.string.action_turn_off))
                 }
             },
             dismissButton = {
@@ -211,7 +213,7 @@ fun SettingsScreen(
                         TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search apps...") },
+                            placeholder = { Text(stringResource(R.string.search_apps_placeholder)) },
                             singleLine = true,
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -222,7 +224,7 @@ fun SettingsScreen(
                              modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
                         )
                     } else {
-                         Text(if (pageState == SettingsPage.MAIN) "Settings" else "Select App") 
+                         Text(if (pageState == SettingsPage.MAIN) stringResource(R.string.page_title_settings) else stringResource(R.string.action_select_app))
                     }
                 },
                 navigationIcon = {
@@ -243,9 +245,9 @@ fun SettingsScreen(
                                 }
                             }
                         },
-                        tooltip = "Back"
+                        tooltip = stringResource(R.string.cd_back)
                     ) {
-                        Icon(if (isSearchActive) Icons.Default.ArrowBack else Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(if (isSearchActive) Icons.Default.ArrowBack else Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
                 actions = {
@@ -257,13 +259,13 @@ fun SettingsScreen(
                          // APP SELECTION ACTIONS
                          if (!isSearchActive) {
                              IconButton(onClick = { isSearchActive = true }) {
-                                 Icon(Icons.Default.Search, contentDescription = "Search")
+                                 Icon(Icons.Default.Search, contentDescription = stringResource(R.string.cd_search))
                              }
                          } else {
                              IconButton(onClick = { 
                                  searchQuery = "" 
                              }) {
-                                 Icon(Icons.Default.Close, contentDescription = "Clear")
+                                 Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear))
                              }
                          }
                     }
@@ -286,7 +288,7 @@ fun SettingsScreen(
                     // Section: Target App
                     item(key = "header_target_app") {
                         Text(
-                            text = "Target App",
+                            text = stringResource(R.string.header_target_app),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -308,9 +310,9 @@ fun SettingsScreen(
                             },
                             supportingContent = { 
                                 val displayPkg = if (currentApp != null) currentApp.packageName 
-                                                 else if (selectedComponent != null && !isLoadingApps) "App not found ($selectedComponent)"
-                                                 else if (selectedComponent != null) "Loading..."
-                                                 else "No app selected"
+                                                 else if (selectedComponent != null && !isLoadingApps) stringResource(R.string.state_app_not_found, selectedComponent ?: "")
+                                                 else if (selectedComponent != null) stringResource(R.string.state_loading)
+                                                 else stringResource(R.string.state_no_app_selected)
                                 Text(displayPkg, maxLines = 1, overflow = TextOverflow.Ellipsis) 
                             },
                             leadingContent = {
@@ -331,7 +333,7 @@ fun SettingsScreen(
                                               Icon(Icons.Default.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                          } else if (selectedComponent != null) {
                                               // Warning / Not Found
-                                              Icon(Icons.Default.Close, contentDescription = "Not Found", tint = MaterialTheme.colorScheme.error)
+                                              Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_not_found), tint = MaterialTheme.colorScheme.error)
                                          } else {
                                               // Empty / Check
                                               Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -340,7 +342,7 @@ fun SettingsScreen(
                                 }
                             },
                             trailingContent = {
-                                Icon(Icons.Default.ArrowForward, contentDescription = "Select App")
+                                Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.action_select_app))
                             },
                             modifier = Modifier.clickable { pageState = SettingsPage.APP_SELECTION }
                         )
@@ -353,7 +355,7 @@ fun SettingsScreen(
                     // Section: General
                     item(key = "header_general") {
                         Text(
-                            text = "General",
+                            text = stringResource(R.string.header_general),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -373,7 +375,7 @@ fun SettingsScreen(
                                 isError = isPathError,
                                 label = { 
                                     Text(
-                                        if (isPathError) "Invalid Path" else "Default Path",
+                                        if (isPathError) stringResource(R.string.path_label_invalid) else stringResource(R.string.path_label_default),
                                         modifier = Modifier.padding(horizontal = 4.dp).background(MaterialTheme.colorScheme.background)
                                     ) 
                                 },
@@ -387,7 +389,7 @@ fun SettingsScreen(
                                         )
                                         isPathError = false
                                     }) {
-                                        Text("Use Current")
+                                        Text(stringResource(R.string.action_use_current))
                                     }
                                 }
                             )
@@ -430,8 +432,8 @@ fun SettingsScreen(
 
                     item(key = "switch_check_storage") {
                         ListItem(
-                            headlineContent = { Text("Validate Free Space") },
-                            supportingContent = { Text("Check if internal storage has enough space for a copy of the selected files (Some apps might copy shared files to cache)") },
+                            headlineContent = { Text(stringResource(R.string.setting_validate_free_space)) },
+                            supportingContent = { Text(stringResource(R.string.setting_validate_free_space_desc)) },
                             trailingContent = {
                                 Switch(
                                     checked = checkLowStorage,
@@ -463,7 +465,7 @@ fun SettingsScreen(
                     // Section: Filter
                     item(key = "header_filters") {
                         Text(
-                            text = "File Visibility",
+                            text = stringResource(R.string.header_file_visibility),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -492,7 +494,7 @@ fun SettingsScreen(
                     // Section: Support
                     item(key = "header_support") {
                         Text(
-                            text = "Support",
+                            text = stringResource(R.string.header_support),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -533,7 +535,7 @@ fun SettingsScreen(
                                          onReset() 
                                      }
                                  ) {
-                                     Text("Reset to Defaults", color = MaterialTheme.colorScheme.error)
+                                     Text(stringResource(R.string.action_reset_to_defaults), color = MaterialTheme.colorScheme.error)
                                  }
                                  
                                  Spacer(modifier = Modifier.height(16.dp))
@@ -542,7 +544,7 @@ fun SettingsScreen(
                                  val isDebug = BuildConfig.DEBUG
                                  val channel = if (isDebug) "Dev" else "Beta"
                                  Text(
-                                     text = "Version $versionName ($channel)",
+                                     text = stringResource(R.string.version_format, versionName, channel),
                                      style = MaterialTheme.typography.labelSmall,
                                      color = MaterialTheme.colorScheme.onSurfaceVariant
                                  )

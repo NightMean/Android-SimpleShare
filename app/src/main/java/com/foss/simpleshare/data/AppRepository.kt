@@ -7,6 +7,10 @@ import android.os.Build
 
 class AppRepository(private val context: Context) {
 
+    private companion object {
+        const val TAG = "AppRepository"
+    }
+
     fun getShareableApps(): List<AppModel> {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "*/*" // Use */* to ensure we find ALL apps (like Google Drive, primitive file handlers, etc)
@@ -27,6 +31,9 @@ class AppRepository(private val context: Context) {
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
             }
         } catch (e: Exception) {
+            // Empty list silently disabled the whole target-app picker with no trace;
+            // at least record why the query failed.
+            android.util.Log.w(TAG, "queryIntentActivities(ACTION_SEND) failed", e)
             emptyList()
         }
 

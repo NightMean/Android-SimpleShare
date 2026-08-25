@@ -3,10 +3,10 @@
 <h1 align="center">SimpleShare</h1>
 <div align="center">
 
-  <a href="">![GitHub Release](https://img.shields.io/github/v/release/NightMean/Android_SimpleShare?style=flat)</a>
-  <a href="">![GitHub Issues](https://img.shields.io/github/issues/NightMean/Android_SimpleShare?style=flat)</a>
-  <a href="">![GitHub Pull Requests](https://img.shields.io/github/issues-pr/NightMean/Android_SimpleShare?color=blue)</a>
-  <a href="">![GitHub License](https://img.shields.io/github/license/NightMean/Android_SimpleShare?style=flat)</a>
+  <a href="">![GitHub Release](https://img.shields.io/github/v/release/NightMean/Android-SimpleShare?style=flat)</a>
+  <a href="">![GitHub Issues](https://img.shields.io/github/issues/NightMean/Android-SimpleShare?style=flat)</a>
+  <a href="">![GitHub Pull Requests](https://img.shields.io/github/issues-pr/NightMean/Android-SimpleShare?color=blue)</a>
+  <a href="">![GitHub License](https://img.shields.io/github/license/NightMean/Android-SimpleShare?style=flat)</a>
   </div>
 <p align="center">Android file browser to quickly share files to your favorite app on Android 9 (Pie) and newer</p>
 </div>
@@ -36,7 +36,7 @@
 ## Download
 You can download **SimpleShare** directly from the GitHub releases page or by tapping on the badge below.
 <p align="center">  
-  <a href="https://github.com/NightMean/Android_SimpleShare/releases/latest">
+  <a href="https://github.com/NightMean/Android-SimpleShare/releases/latest">
     <img src="assets/Download_Get_it_on_Github.png" alt="Get it on GitHub" height="60">
   </a>
 </p>
@@ -59,8 +59,8 @@ Requires JDK 17 and Android SDK 35. Use the included Gradle wrapper:
 
 ## Localization
 
-The app is English-only by design; UI strings are not extracted to resources yet.
-Translations are welcome once strings are externalized.
+All UI strings live in `app/src/main/res/values/strings.xml`. Translations are
+welcome — add a `values-<locale>/strings.xml` with the translated keys.
 
 
 ## Donations

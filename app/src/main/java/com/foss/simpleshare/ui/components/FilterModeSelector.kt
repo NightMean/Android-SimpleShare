@@ -119,9 +119,7 @@ fun FilterModeSelector(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         modifier = Modifier.basicMarquee(
-                            iterations = Int.MAX_VALUE,
-                            delayMillis = 0,
-                            initialDelayMillis = 0
+                            iterations = Int.MAX_VALUE
                         )
                     )
                 }

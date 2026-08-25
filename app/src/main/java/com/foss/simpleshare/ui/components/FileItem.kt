@@ -75,7 +75,7 @@ fun FileListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .indication(interactionSource, androidx.compose.material.ripple.rememberRipple())
+            .indication(interactionSource, androidx.compose.material3.ripple())
             .background(if (file.isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -148,7 +148,7 @@ fun FileGridItem(
             .fillMaxWidth()
             .padding(4.dp)
             .aspectRatio(1f)
-            .indication(interactionSource, androidx.compose.material.ripple.rememberRipple())
+            .indication(interactionSource, androidx.compose.material3.ripple())
             .border(
                 width = if (file.isSelected) 3.dp else 0.dp,
                 color = if (file.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,

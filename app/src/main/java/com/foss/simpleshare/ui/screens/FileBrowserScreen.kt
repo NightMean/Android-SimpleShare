@@ -8,6 +8,12 @@ import android.widget.Toast
 import com.foss.simpleshare.ui.components.FastScrollbar
 import com.foss.simpleshare.ui.components.TooltipIconButton
 import com.foss.simpleshare.ui.components.TooltipPosition
+import com.foss.simpleshare.ui.components.computeDragSelection
+import com.foss.simpleshare.ui.components.computeGridScrollProgress
+import com.foss.simpleshare.ui.components.computeListScrollProgress
+import com.foss.simpleshare.ui.components.gridItemIndexAtOffset
+import com.foss.simpleshare.ui.components.listItemIndexAtOffset
+import com.foss.simpleshare.ui.components.syncSelection
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.Image
@@ -646,19 +652,9 @@ fun FileBrowserScreen(
                 // Helper to get index from offset
                 fun getItemIndexFromOffset(offset: Offset): Int? {
                     return if (isGridView) {
-                        gridState.layoutInfo.visibleItemsInfo.firstOrNull { item ->
-                            val x = item.offset.x
-                            val y = item.offset.y
-                            // Grid items can be complex, but simple bounds check usually suffices
-                            offset.x >= x && offset.x <= x + item.size.width &&
-                            offset.y >= y && offset.y <= y + item.size.height
-                        }?.index
+                        gridItemIndexAtOffset(gridState.layoutInfo, offset.x, offset.y)
                     } else {
-                        listState.layoutInfo.visibleItemsInfo.firstOrNull { item ->
-                            val y = item.offset
-                            // List items span full width usually
-                            offset.y >= y && offset.y <= y + item.size
-                        }?.index
+                        listItemIndexAtOffset(listState.layoutInfo, offset.y)
                     }
                 }
 
@@ -697,36 +693,16 @@ fun FileBrowserScreen(
                     val currentIndex = currentDragIndex
                     if (startInfo != null && currentIndex != null && currentIndex >= 0 && currentIndex < displayedFiles.size) {
                         val (startIndex, initialSelection) = startInfo
-                        val min = minOf(startIndex, currentIndex)
-                        val max = maxOf(startIndex, currentIndex)
-                        
-                        // New Selection = Initial + Range
-                        val newSelectionPaths = initialSelection.toMutableSet()
-                        for (i in min..max) {
-                            if (!displayedFiles[i].isDirectory) {
-                                newSelectionPaths.add(displayedFiles[i].path)
-                            }
-                        }
-                        
-                        // Sync to selectedFiles
-                        // We need to match the logic of adding/removing
-                        // Optimization: Only update if changed significantly? 
-                        // But selectedFiles is a mutable list, we need to clear and re-add or diff?
-                        // Simplest: Rebuild
-                        
-                        val currentSet = selectedFiles.map { it.path }.toSet()
-                        if (currentSet != newSelectionPaths) {
-                             // This is heavy if list is huge, but for reasonable lists it's fine.
-                             // More efficient:
-                             // 1. Remove items not in new
-                             selectedFiles.removeAll { it.path !in newSelectionPaths }
-                             // 2. Add items in new that are missing
-                             newSelectionPaths.forEach { path ->
-                                 if (selectedFiles.none { it.path == path }) {
-                                      displayedFiles.find { it.path == path }?.let { selectedFiles.add(it) }
-                                 }
-                             }
-                        }
+
+                        // New Selection = Initial + Range (pure computation)
+                        val newSelectionPaths = computeDragSelection(
+                            displayedFiles = displayedFiles,
+                            startIndex = startIndex,
+                            currentIndex = currentIndex,
+                            initialSelection = initialSelection
+                        )
+
+                        syncSelection(selectedFiles, newSelectionPaths, displayedFiles)
                     }
                 }
 
@@ -886,69 +862,11 @@ fun FileBrowserScreen(
                     }
                 }
 
-                // Fast Scroll Implementation
+                // Fast Scroll Implementation (pure math in ui/components/ScrollMath.kt)
                 val scrollStateValues = remember(isGridView, listState, gridState, displayedFiles) {
                     derivedStateOf {
-                        if (isGridView) {
-                            val layout = gridState.layoutInfo
-                            val totalItems = layout.totalItemsCount
-                            
-                            val visibleInfo = layout.visibleItemsInfo
-                            if (totalItems == 0 || visibleInfo.isEmpty()) {
-                                0f to 0f
-                            } else {
-                                val firstItem = visibleInfo.first()
-                                val itemHeight = firstItem.size.height
-                                val itemWidth = firstItem.size.width
-                                val viewportWidth = layout.viewportSize.width
-                                val viewportHeight = layout.viewportSize.height.toFloat()
-                                
-                                if (itemHeight <= 0 || itemWidth <= 0) {
-                                    0f to 0f 
-                                } else {
-                                    val spanCount = (viewportWidth / itemWidth).coerceAtLeast(1)
-                                    val totalRows = (totalItems + spanCount - 1) / spanCount
-                                    
-                                    // Use Row Index for calculation
-                                    val currentRow = gridState.firstVisibleItemIndex / spanCount
-                                    val rowOffset = gridState.firstVisibleItemScrollOffset
-                                    
-                                    val contentHeight = totalRows * itemHeight.toFloat()
-                                    val scrollOffset = (currentRow * itemHeight) + rowOffset
-                                    
-                                    val fraction = (viewportHeight / contentHeight).coerceIn(0f, 1f)
-                                    val progress = if (contentHeight > viewportHeight) 
-                                        (scrollOffset / (contentHeight - viewportHeight)).coerceIn(0f, 1f)
-                                    else 0f
-                                    
-                                    progress to fraction
-                                }
-                            }
-                        } else {
-                            val layout = listState.layoutInfo
-                            val totalItems = layout.totalItemsCount
-                            
-                            val visibleInfo = layout.visibleItemsInfo
-                            if (totalItems == 0 || visibleInfo.isEmpty()) {
-                                0f to 0f
-                            } else {
-                                val itemHeight = visibleInfo.first().size
-                                val viewportHeight = layout.viewportSize.height.toFloat()
-                                
-                                if (itemHeight <= 0) 0f to 0f
-                                else {
-                                    val contentHeight = itemHeight.toFloat() * totalItems
-                                    val scrollOffset = (listState.firstVisibleItemIndex * itemHeight) + listState.firstVisibleItemScrollOffset
-                                    
-                                    val fraction = (viewportHeight / contentHeight).coerceIn(0f, 1f)
-                                    val progress = if (contentHeight > viewportHeight) 
-                                        (scrollOffset / (contentHeight - viewportHeight)).coerceIn(0f, 1f)
-                                    else 0f
-                                    
-                                    progress to fraction
-                                }
-                            }
-                        }
+                        if (isGridView) computeGridScrollProgress(gridState.layoutInfo)
+                        else computeListScrollProgress(listState.layoutInfo)
                     }
                 }
 

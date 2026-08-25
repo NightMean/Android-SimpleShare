@@ -290,22 +290,27 @@ fun FileBrowserScreen(
         isLoading = false
     }
 
-    // Async folder size loading: check cache first, then calculate if needed
+    // Async folder details (size + child count): check cache first, then calculate if needed
     LaunchedEffect(rawFiles) {
-        val folders = rawFiles.filter { it.isDirectory && it.size == -1L }
-        if (folders.isEmpty()) return@LaunchedEffect
+        val pendingFolders = rawFiles.filter { it.isDirectory && (it.size == -1L || it.itemCount == -1) }
+        if (pendingFolders.isEmpty()) return@LaunchedEffect
 
-        folders.forEach { folder ->
+        pendingFolders.forEach { folder ->
             launch {
-                // Calculate on IO thread
-                val size = withContext(Dispatchers.IO) {
-                    repository.getCachedSize(folder.path)
-                        ?: repository.calculateAndCacheSize(folder.path)
-                }
-                
-                // Update UI on main thread (already on Main since withContext returns)
+                val size = if (folder.size == -1L) {
+                    withContext(Dispatchers.IO) {
+                        repository.getCachedSize(folder.path)
+                            ?: repository.calculateAndCacheSize(folder.path)
+                    }
+                } else folder.size
+
+                val itemCount = if (folder.itemCount == -1) {
+                    // file.list() reads names only — cheaper than listFiles()
+                    withContext(Dispatchers.IO) { java.io.File(folder.path).list()?.size ?: 0 }
+                } else folder.itemCount
+
                 rawFiles = rawFiles.map { file ->
-                    if (file.path == folder.path) file.copy(size = size) else file
+                    if (file.path == folder.path) file.copy(size = size, itemCount = itemCount) else file
                 }
             }
         }

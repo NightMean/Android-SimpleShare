@@ -100,10 +100,11 @@ fun FileListItem(
                     overflow = TextOverflow.Ellipsis
                 )
             } else {
-                // Show placeholder "..." when size is being calculated (-1L)
+                // Show placeholder "..." while size/count are being calculated (-1)
                 val sizeText = if (file.size == -1L) "..." else formatFileSize(file.size)
+                val countText = if (file.itemCount == -1) "…" else "${file.itemCount} items"
                  Text(
-                    text = "${file.itemCount} items • $sizeText",
+                    text = "$countText • $sizeText",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

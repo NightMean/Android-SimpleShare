@@ -33,7 +33,9 @@ class FileRepository(private val directoryCacheDao: DirectoryCacheDao? = null) {
                     // -1L = placeholder ("calculating..."), actual size loaded async
                     size = if (isDirectory) -1L else file.length(),
                     extension = extension,
-                    itemCount = if (isDirectory) (file.listFiles()?.size ?: 0) else 0
+                    // -1 = placeholder, child count loaded async to avoid an extra
+                    // recursive directory scan per folder during listing
+                    itemCount = if (isDirectory) -1 else 0
                 )
             } else {
                 null

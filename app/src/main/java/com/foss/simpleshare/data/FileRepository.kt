@@ -49,33 +49,14 @@ class FileRepository(private val directoryCacheDao: DirectoryCacheDao? = null) {
      */
     suspend fun listFilesWithCachedSizes(path: String, allowedExtensions: Set<String>): List<FileModel> {
         val files = withContext(Dispatchers.IO) { listFiles(path, allowedExtensions) }
-        
+
         // Apply cached sizes for folders
         return files.map { file ->
             if (file.isDirectory && file.size == -1L) {
-                val cachedSize = getCachedSizeSync(file.path)
+                val cachedSize = getCachedSize(file.path)
                 if (cachedSize != null) file.copy(size = cachedSize) else file
             } else {
                 file
-            }
-        }
-    }
-
-    /**
-     * Synchronous cache lookup (runs on IO thread).
-     */
-    private fun getCachedSizeSync(folderPath: String): Long? {
-        val dao = directoryCacheDao ?: return null
-        val folder = File(folderPath)
-        if (!folder.exists()) return null
-        
-        // Note: This is a blocking call, should only be used from IO dispatcher
-        return kotlinx.coroutines.runBlocking {
-            val cached = dao.getByPath(folderPath)
-            if (cached != null && cached.lastModified == folder.lastModified()) {
-                cached.size
-            } else {
-                null
             }
         }
     }

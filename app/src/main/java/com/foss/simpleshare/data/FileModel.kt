@@ -10,7 +10,7 @@ data class FileModel(
     val size: Long,
     val extension: String,
     val itemCount: Int = 0,
-    var isSelected: Boolean = false
+    val isSelected: Boolean = false
 )
 
 /**

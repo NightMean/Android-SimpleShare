@@ -504,8 +504,8 @@ fun SettingsScreen(
                             headlineContent = { Text("GitHub Project") },
                             supportingContent = { Text("View source code and contributors") },
                             leadingContent = { Icon(Icons.Default.Info, contentDescription = null) },
-                            modifier = Modifier.clickable { 
-                                uriHandler.openUri("https://github.com/NightMean/Android_SimpleShare")
+                            modifier = Modifier.clickable {
+                                uriHandler.openUri("https://github.com/NightMean/Android-SimpleShare")
                             }
                         )
                     }
@@ -515,8 +515,8 @@ fun SettingsScreen(
                             headlineContent = { Text("Report an Issue") },
                             supportingContent = { Text("Found a bug? Let us know on GitHub") },
                             leadingContent = { Icon(Icons.Default.BugReport, contentDescription = null) },
-                            modifier = Modifier.clickable { 
-                                uriHandler.openUri("https://github.com/NightMean/Android_SimpleShare/issues")
+                            modifier = Modifier.clickable {
+                                uriHandler.openUri("https://github.com/NightMean/Android-SimpleShare/issues")
                             }
                         )
                     }

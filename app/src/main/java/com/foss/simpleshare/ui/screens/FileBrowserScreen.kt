@@ -1068,7 +1068,19 @@ fun shareFiles(context: android.content.Context, files: List<FileModel>, targetA
             }
             val mimeType = if (files.any { it.extension in setOf("mp4", "mkv", "webm", "avi") }) "video/*" else "image/*"
             type = mimeType
-            
+
+            // Older Android versions only honor FLAG_GRANT_READ_URI_PERMISSION for the
+            // first EXTRA_STREAM URI, so the target app sees an empty selection for
+            // ACTION_SEND_MULTIPLE. Attaching every URI via ClipData grants read
+            // access to all of them.
+            if (uris.isNotEmpty()) {
+                val clipData = android.content.ClipData.newRawUri(null, uris[0])
+                for (i in 1 until uris.size) {
+                    clipData.addItem(android.content.ClipData.Item(uris[i]))
+                }
+                this.clipData = clipData
+            }
+
             if (targetAppPackageName != null) {
                 if (targetAppPackageName.contains("/")) {
                     val split = targetAppPackageName.split("/")

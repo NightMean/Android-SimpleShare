@@ -369,7 +369,8 @@ fun FileBrowserScreen(
     fun onProceedClick() {
         if (checkLowStorage) {
             val totalSize = selectedFiles.sumOf { it.size }
-            val availableSpace = StorageUtils.getAvailableStorage()
+            // Check the volume currently being browsed, not a hardcoded one
+            val availableSpace = StorageUtils.getAvailableStorage(currentPath)
 
             if (availableSpace < totalSize) {
                 showLowSpaceDialog = true

@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.foss.simpleshare.data.AppModel
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.foss.simpleshare.ui.components.rememberDrawablePainter
 import kotlinx.coroutines.launch
 
 @Composable

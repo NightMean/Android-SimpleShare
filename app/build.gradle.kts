@@ -71,9 +71,6 @@ dependencies {
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:ksp:4.16.0")
-    
-    // Accompanist
-    implementation("com.google.accompanist:accompanist-drawablepainter:0.32.0")
 
     // Room (Persistent Folder Size Cache)
     implementation("androidx.room:room-runtime:2.6.1")

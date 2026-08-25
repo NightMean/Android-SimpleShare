@@ -257,7 +257,7 @@ fun SetupScreen(
                             Text("Current Target Share App: ", style = MaterialTheme.typography.bodyMedium)
                             Spacer(modifier = Modifier.width(8.dp))
                             Image(
-                                painter = com.google.accompanist.drawablepainter.rememberDrawablePainter(drawable = currentAppModel.icon),
+                                painter = com.foss.simpleshare.ui.components.rememberDrawablePainter(drawable = currentAppModel.icon),
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp)
                             )

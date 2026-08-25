@@ -113,7 +113,7 @@ import com.foss.simpleshare.share.FileSharer
 import com.foss.simpleshare.ui.components.FileGridItem
 import com.foss.simpleshare.ui.components.FileListItem
 import com.foss.simpleshare.utils.StorageUtils
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.foss.simpleshare.ui.components.rememberDrawablePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

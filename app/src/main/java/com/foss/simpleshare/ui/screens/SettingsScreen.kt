@@ -33,7 +33,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import kotlinx.coroutines.launch
 import com.foss.simpleshare.ui.components.TooltipIconButton
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.foss.simpleshare.ui.components.rememberDrawablePainter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.BugReport

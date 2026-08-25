@@ -12,6 +12,7 @@ import android.provider.Settings
 import java.io.File
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,6 +64,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Draw behind system bars so the navigation bar sits over the app content
+        // instead of leaving a black strip below it on gesture-navigation devices.
+        enableEdgeToEdge()
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         setContent {

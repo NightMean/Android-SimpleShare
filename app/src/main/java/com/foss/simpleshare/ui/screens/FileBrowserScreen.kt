@@ -100,6 +100,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.foss.simpleshare.data.FileModel
 import com.foss.simpleshare.data.FileRepository
+import com.foss.simpleshare.data.SortOption
 import com.foss.simpleshare.ui.components.FileGridItem
 import com.foss.simpleshare.ui.components.FileListItem
 import com.foss.simpleshare.utils.StorageUtils
@@ -113,9 +114,6 @@ import java.util.Locale
 import androidx.compose.ui.res.painterResource
 import com.foss.simpleshare.R
 
-enum class SortOption {
-    NAME, SIZE, DATE, TYPE
-}
 
 
 

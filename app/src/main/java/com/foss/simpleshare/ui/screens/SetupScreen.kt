@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.foss.simpleshare.data.AppModel
 import com.foss.simpleshare.data.AppRepository
+import com.foss.simpleshare.settings.FilterMode
 import com.foss.simpleshare.ui.components.AppList
 
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,9 +64,9 @@ fun SetupScreen(
     onFinish: () -> Unit,
     onNavigateToAppSelection: () -> Unit,
     onBackFromAppSelection: () -> Unit,
-    currentFilterMode: String,
+    currentFilterMode: FilterMode,
     currentCustomExtensions: String,
-    onFilterModeChange: (String) -> Unit,
+    onFilterModeChange: (FilterMode) -> Unit,
     onCustomExtensionsChange: (String) -> Unit
 ) {
     if (currentScreen == com.foss.simpleshare.ui.Screen.SETUP_APP_SELECTION) {
@@ -289,9 +290,9 @@ fun SetupScreen(
                 )
 
                 com.foss.simpleshare.ui.components.FilterModeSelector(
-                    selectedMode = currentFilterMode,
+                    selectedMode = currentFilterMode.name,
                     customExtensions = currentCustomExtensions,
-                    onModeSelected = onFilterModeChange,
+                    onModeSelected = { onFilterModeChange(FilterMode.valueOf(it)) },
                     onCustomExtensionsChanged = onCustomExtensionsChange
                 )
                 
@@ -301,7 +302,7 @@ fun SetupScreen(
                 Button(
                     onClick = {
                         // Validation
-                        if (currentFilterMode == "CUSTOM") {
+                        if (currentFilterMode == FilterMode.CUSTOM) {
                             val hasValidChar = currentCustomExtensions.any { it.isLetterOrDigit() }
                             if (!hasValidChar) {
                                 android.widget.Toast.makeText(context, "Please enter at least one file extension (e.g. pdf, zip, 7z)", android.widget.Toast.LENGTH_LONG).show()

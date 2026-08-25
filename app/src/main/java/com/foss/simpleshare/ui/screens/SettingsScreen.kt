@@ -26,6 +26,8 @@ import java.io.File
 import com.foss.simpleshare.BuildConfig
 import com.foss.simpleshare.data.AppModel
 import com.foss.simpleshare.data.AppRepository
+import com.foss.simpleshare.settings.AppSettings
+import com.foss.simpleshare.settings.FilterMode
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -41,31 +43,25 @@ private enum class SettingsPage { MAIN, APP_SELECTION }
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun SettingsScreen(
-    currentDefaultPath: String,
+    currentSettings: AppSettings,
     currentBrowserPath: String,
-    currentTargetAppPackage: String?,
-    currentKeepSelection: Boolean,
-    currentShowThumbnails: Boolean,
-    currentCheckLowStorage: Boolean,
-    currentQuickOpen: Boolean,
-    currentFilterMode: String, // "PRESET_MEDIA" or "CUSTOM"
-    currentCustomExtensions: String,
     selectedFileCount: Int,
     onBack: () -> Unit,
-    onSave: (String, String?, Boolean, Boolean, Boolean, Boolean, String, String) -> Unit,
+    onSave: (AppSettings) -> Unit,
     onReset: () -> Unit
 ) {
+    val currentDefaultPath = currentSettings.defaultPath
     var path by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(
         text = currentDefaultPath,
         selection = androidx.compose.ui.text.TextRange(currentDefaultPath.length)
     )) }
-    var selectedComponent by remember { mutableStateOf(currentTargetAppPackage) }
-    var keepSelection by remember { mutableStateOf(currentKeepSelection) }
-    var showThumbnails by remember { mutableStateOf(currentShowThumbnails) }
-    var checkLowStorage by remember { mutableStateOf(currentCheckLowStorage) }
-    var quickOpen by remember { mutableStateOf(currentQuickOpen) }
-    var filterMode by remember { mutableStateOf(currentFilterMode) }
-    var customExtensions by remember { mutableStateOf(currentCustomExtensions) }
+    var selectedComponent by remember { mutableStateOf(currentSettings.targetAppPackage) }
+    var keepSelection by remember { mutableStateOf(currentSettings.keepSelection) }
+    var showThumbnails by remember { mutableStateOf(currentSettings.showThumbnails) }
+    var checkLowStorage by remember { mutableStateOf(currentSettings.checkLowStorage) }
+    var quickOpen by remember { mutableStateOf(currentSettings.quickOpen) }
+    var filterMode by remember { mutableStateOf(currentSettings.filterMode) }
+    var customExtensions by remember { mutableStateOf(currentSettings.customExtensions) }
     var isPathError by remember { mutableStateOf(false) }
     
     // Internal Navigation State
@@ -97,7 +93,7 @@ fun SettingsScreen(
             return
         }
 
-        if (filterMode == "CUSTOM") {
+        if (filterMode == FilterMode.CUSTOM) {
             val hasValidChar = customExtensions.any { it.isLetterOrDigit() }
             if (!hasValidChar) {
                 isCustomExtError = true
@@ -106,8 +102,22 @@ fun SettingsScreen(
             }
         }
 
-        onSave(currentPathText, selectedComponent, keepSelection, showThumbnails, checkLowStorage, quickOpen, filterMode, customExtensions)
-        
+        onSave(
+            AppSettings(
+                defaultPath = currentPathText,
+                targetAppPackage = selectedComponent,
+                keepSelection = keepSelection,
+                showThumbnails = showThumbnails,
+                checkLowStorage = checkLowStorage,
+                quickOpen = quickOpen,
+                filterMode = filterMode,
+                customExtensions = customExtensions,
+                sortOption = currentSettings.sortOption,
+                isSortAscending = currentSettings.isSortAscending,
+                sortFoldersFirst = currentSettings.sortFoldersFirst
+            )
+        )
+
         if (goBackAfterSave) {
             onBack()
         }
@@ -115,13 +125,13 @@ fun SettingsScreen(
 
     // Dirty State Tracking simplified (recalculated on recomposition)
     val isDirty = path.text != currentDefaultPath ||
-                  selectedComponent != currentTargetAppPackage ||
-                  keepSelection != currentKeepSelection ||
-                  showThumbnails != currentShowThumbnails ||
-                  checkLowStorage != currentCheckLowStorage ||
-                  quickOpen != currentQuickOpen ||
-                  filterMode != currentFilterMode ||
-                  customExtensions != currentCustomExtensions
+                  selectedComponent != currentSettings.targetAppPackage ||
+                  keepSelection != currentSettings.keepSelection ||
+                  showThumbnails != currentSettings.showThumbnails ||
+                  checkLowStorage != currentSettings.checkLowStorage ||
+                  quickOpen != currentSettings.quickOpen ||
+                  filterMode != currentSettings.filterMode ||
+                  customExtensions != currentSettings.customExtensions
                   
     var showUnsavedDialog by remember { mutableStateOf(false) }
 
@@ -463,9 +473,9 @@ fun SettingsScreen(
                     item(key = "filter_selector") {
                         Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                             com.foss.simpleshare.ui.components.FilterModeSelector(
-                                selectedMode = filterMode,
+                                selectedMode = filterMode.name,
                                 customExtensions = customExtensions,
-                                onModeSelected = { filterMode = it },
+                                onModeSelected = { filterMode = FilterMode.valueOf(it) },
                                 onCustomExtensionsChanged = { 
                                     customExtensions = it
                                     isCustomExtError = false
